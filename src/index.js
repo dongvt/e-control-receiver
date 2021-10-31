@@ -1,6 +1,9 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow,ipcMain } = require("electron");
+//var robot = require("robotjs");
+const OSControl = require('./model/OSControl');
 const path = require("path");
 
+app.allowRendererProcessReuse = false;
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   // eslint-disable-line global-require
@@ -20,23 +23,7 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "index.html"));
-  // ============= TEST: MOVE THE CURSOS WITH ROBOT ============================
-  var robot = require("robotjs");
-
-  // Speed up the mouse.
-  robot.setMouseDelay(2);
-
-  var twoPI = Math.PI * 2.0;
-  var screenSize = robot.getScreenSize();
-  var height = screenSize.height / 2 - 10;
-  var width = screenSize.width;
-
-  for (var x = 0; x < width; x++) {
-    y = height * Math.sin((twoPI * x) / width) + height;
-    robot.moveMouse(x, y);
-  }
-
-  //====================== TEST END =====================
+  
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 };
@@ -65,3 +52,19 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+ipcMain.on('from-process',(event,message) => {
+  console.log(message);
+  const osControl = new OSControl();
+  osControl.move();
+  // robot.setMouseDelay(0);
+
+  // var twoPI = Math.PI * 2.0;
+  // var screenSize = robot.getScreenSize();
+  // var height = screenSize.height / 2 - 10;
+  // var width = screenSize.width;
+
+  // for (var x = 0; x < width; x++) {
+  //   y = height * Math.sin((twoPI * x) / width) + height;
+  //   robot.moveMouse(x, y);
+  // }
+});
