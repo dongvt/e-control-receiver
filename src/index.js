@@ -1,6 +1,6 @@
-const { app, BrowserWindow,ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 //var robot = require("robotjs");
-const OSControl = require('./model/OSControl');
+const OSControl = require("./model/OSControl");
 const path = require("path");
 
 app.allowRendererProcessReuse = false;
@@ -23,7 +23,7 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "index.html"));
-  
+
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 };
@@ -52,7 +52,7 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-ipcMain.on('from-process',(event,message) => {
+ipcMain.on("from-process", (event, message) => {
   console.log(message);
   const osControl = new OSControl();
   osControl.move();
@@ -67,4 +67,10 @@ ipcMain.on('from-process',(event,message) => {
   //   y = height * Math.sin((twoPI * x) / width) + height;
   //   robot.moveMouse(x, y);
   // }
+});
+
+ipcMain.on("type", (event, message) => {
+  const osControl = new OSControl();
+  console.log(message);
+  osControl.type(message);
 });

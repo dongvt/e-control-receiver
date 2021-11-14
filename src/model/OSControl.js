@@ -1,13 +1,9 @@
-
 var robot = require("robotjs");
 
 class OSControl {
-  constructor() {
-
-  }
+  constructor() {}
   move() {
-    
-    console.log("Testing the robot control")
+    console.log("Testing the robot control");
     robot.setMouseDelay(0);
 
     var twoPI = Math.PI * 2.0;
@@ -19,7 +15,11 @@ class OSControl {
       let y = height * Math.sin((twoPI * x) / width) + height;
       robot.moveMouse(x, y);
     }
-    console.log("Ending robot test")
+    console.log("Ending robot test");
+  }
+
+  type(text) {
+    robot.typeString(text);
   }
 }
 

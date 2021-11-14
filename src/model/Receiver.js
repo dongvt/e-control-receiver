@@ -1,9 +1,10 @@
+const { ipcRenderer } = require("electron");
 const express = require("express");
 
 const path = require("path");
 
 class Receiver {
-  constructor(stop,play,port = 3000) {
+  constructor(stop, play, port = 3000) {
     this.port = port;
     this.app = null;
     this.server = null;
@@ -25,23 +26,25 @@ class Receiver {
     this.setUpServer();
     this.server = this.app.listen(3000, () => console.log("listening"));
 
+    const io = require("socket.io")(this.server);
+    io.on("connection", (con) => {
+      console.log("someone connected!");
+      con.on("disconnect", () => console.log("client disconnected"));
+      con.on("type", typeHandler);
+    });
+
     //Set STOP listener
-    stop.addEventListener('click',stopHandler.bind(this,server));
-    // const io = require("socket.io")(server);
-
-    // io.on("connection", (stream) => {
-    //   console.log("someone connected!");
-    // });
-  }
-  stop(){
-    return `<p> some HTML </p>`;
+    this.stop.addEventListener("click", stopHandler.bind(this, this.server));
   }
 }
 
-let stopHandler = (reciever,event) => {
+let stopHandler = (server, event) => {
   event.preventDefault();
-  console.log(reciever.server);
-  reciever.server.close(() => console.log("Server Closed"));
-}
+  server.close(() => console.log("Server Closed"));
+};
+
+let typeHandler = (data) => {
+  ipcRenderer.send("type", data);
+};
 
 module.exports = Receiver;
