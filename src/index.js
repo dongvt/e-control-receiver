@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 //var robot = require("robotjs");
 const OSControl = require("./model/OSControl");
+
 const path = require("path");
+const osControl = new OSControl();
 
 app.allowRendererProcessReuse = false;
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -17,8 +19,8 @@ const createWindow = () => {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-    },
+      contextIsolation: false
+    }
   });
 
   // and load the index.html of the app.
@@ -52,25 +54,19 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-ipcMain.on("from-process", (event, message) => {
-  console.log(message);
-  const osControl = new OSControl();
-  osControl.move();
-  // robot.setMouseDelay(0);
-
-  // var twoPI = Math.PI * 2.0;
-  // var screenSize = robot.getScreenSize();
-  // var height = screenSize.height / 2 - 10;
-  // var width = screenSize.width;
-
-  // for (var x = 0; x < width; x++) {
-  //   y = height * Math.sin((twoPI * x) / width) + height;
-  //   robot.moveMouse(x, y);
-  // }
-});
 
 ipcMain.on("type", (event, message) => {
-  const osControl = new OSControl();
-  console.log(message);
   osControl.type(message);
+});
+
+ipcMain.on("move", (event, message) => {
+  osControl.move(message[0], message[1]);
+});
+
+ipcMain.on("mouseClick", (event, message) => {
+  if (message) {
+    osControl.mouseClick();
+  } else {
+    osControl.mouseClickRelease();
+  }
 });

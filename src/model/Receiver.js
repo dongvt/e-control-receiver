@@ -27,10 +27,12 @@ class Receiver {
     this.server = this.app.listen(3000, () => console.log("listening"));
 
     const io = require("socket.io")(this.server);
-    io.on("connection", (con) => {
+    io.on("connection", con => {
       console.log("someone connected!");
       con.on("disconnect", () => console.log("client disconnected"));
       con.on("type", typeHandler);
+      con.on("move", moveHandler);
+      con.on("mousePress", pressHandler);
     });
 
     //Set STOP listener
@@ -43,8 +45,16 @@ let stopHandler = (server, event) => {
   server.close(() => console.log("Server Closed"));
 };
 
-let typeHandler = (data) => {
+let typeHandler = data => {
   ipcRenderer.send("type", data);
+};
+
+let moveHandler = data => {
+  ipcRenderer.send("move", data);
+};
+
+let pressHandler = data => {
+  ipcRenderer.send("mouseClick", data);
 };
 
 module.exports = Receiver;
