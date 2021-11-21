@@ -1,16 +1,22 @@
+//Electron
 const { ipcRenderer } = require("electron");
+
+//NodeJS
 const express = require("express");
+const { networkInterfaces } = require("os");
 
 const path = require("path");
 
 class Receiver {
-  constructor(stop, play, port = 3000) {
+  constructor(stop, play, statusDiv, port = 3000) {
     this.port = port;
     this.app = null;
     this.server = null;
     this.router = null;
+    //HTML elements
     this.stop = stop;
     this.play = play;
+    this.statusDiv = statusDiv;
   }
 
   setUpServer() {
@@ -24,11 +30,14 @@ class Receiver {
     this.app = express();
     this.router = express.Router();
     this.setUpServer();
-    this.server = this.app.listen(3000, () => console.log("listening"));
+    this.server = this.app.listen(
+      3000,
+      onConnectHandler.bind(this, this.statusDiv, this.port)
+    );
 
     const io = require("socket.io")(this.server);
     io.on("connection", con => {
-      console.log("someone connected!");
+      console.log("Someone is connected");
       con.on("disconnect", () => console.log("client disconnected"));
       con.on("type", typeHandler);
       con.on("move", moveHandler);
@@ -55,6 +64,29 @@ let moveHandler = data => {
 
 let pressHandler = data => {
   ipcRenderer.send("mouseClick", data);
+};
+
+let onConnectHandler = (status, port) => {
+  let interfaces = networkInterfaces();
+  let address = "";
+
+  //Very old but needed for break
+  outterLoopLabel: for (let devName in interfaces) {
+    let interface = interfaces[devName];
+
+    for (let i = 0; i < interface.length; i++) {
+      if (
+        interface[i].family === "IPv4" && //Working just with ip V4
+        interface[i].address !== "127.0.0.1" && //Ignore the local address
+        !interface[i].internal //Ignore internal address (like the local one)
+      ) {
+        address = interface[i].address;
+        break outterLoopLabel; //Early return for crazy interface setUp in some computers
+      }
+    }
+  }
+
+  status.innerHTML = `Listening on <span>${address}:${port}</span>`;
 };
 
 module.exports = Receiver;

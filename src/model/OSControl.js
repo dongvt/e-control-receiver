@@ -38,7 +38,9 @@ class OSControl {
     this.oldCordinate = [x, y];
   }
 
-  mouseClick() {}
+  mouseClick() {
+    robot.mouseClick();
+  }
 
   mouseClickRelease() {
     this.oldCordinate = [];
