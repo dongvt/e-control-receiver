@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require("electron");
 //var robot = require("robotjs");
 const OSControl = require("./model/OSControl");
 
 const path = require("path");
+let tray = null;
 const osControl = new OSControl();
 
 app.allowRendererProcessReuse = false;
@@ -13,6 +14,16 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = () => {
+  //Tray
+  tray = new Tray(path.join(__dirname, "img", "controlIcon.PNG"));
+  const contextMenu = Menu.buildFromTemplate([
+    { label: "item 1" },
+    { label: "item 3" },
+    { label: "item 2" }
+  ]);
+
+  tray.setToolTip("Este es el tooltip");
+  tray.setContextMenu(contextMenu);
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
