@@ -47,12 +47,23 @@ class OSControl {
   }
 
   type(text) {
-    if (text.length > 1) {
+    if (text.length > 2) {
       text = text.toLowerCase();
       robot.keyTap(text);
-    } else {
+    } 
+    else { //This is to type lower and upper cases
       robot.typeString(text);
     }
+  }
+
+  scroll(direction) {
+    let magnitud = 0;
+    if(direction === "down") {
+      magnitud = -50;
+    } else {
+      magnitud = 50;
+    }
+    robot.scrollMouse(0,direction);
   }
 }
 

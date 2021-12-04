@@ -1,10 +1,13 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu } = require("electron");
-//var robot = require("robotjs");
-const OSControl = require("./model/OSControl");
+const { app, BrowserWindow, Tray } = require("electron");
+
+const Receiver = require("./model/Receiver");
 
 const path = require("path");
 let tray = null;
-const osControl = new OSControl();
+let menuStructure = [];
+
+
+const server = new Receiver();
 
 app.allowRendererProcessReuse = false;
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -15,30 +18,20 @@ if (require("electron-squirrel-startup")) {
 
 const createWindow = () => {
   //Tray
-  tray = new Tray(path.join(__dirname, "img", "controlIcon.PNG"));
-  const contextMenu = Menu.buildFromTemplate([
-    { label: "item 1" },
-    { label: "item 3" },
-    { label: "item 2" }
-  ]);
+  tray = new Tray(path.join(__dirname, "img", "mainIcon.png"));
+  menuStructure = [
+    /*0*/ { label: "listening/running", enabled:false },
+    /*1*/ { type: 'separator' },
+    /*2*/ { label: "Run", click: server.start.bind(server,tray,menuStructure)},
+    /*3*/ { label: "Stop" },
+    /*4*/ { type: 'separator' },
+    /*5*/ { label: "Quit", click: () => app.exit(0) }
+  ];
 
-  tray.setToolTip("Este es el tooltip");
-  tray.setContextMenu(contextMenu);
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  });
+  tray.setToolTip("External control");
 
-  // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "index.html"));
+  server.start(tray,menuStructure);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -65,19 +58,3 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-
-ipcMain.on("type", (event, message) => {
-  osControl.type(message);
-});
-
-ipcMain.on("move", (event, message) => {
-  osControl.move(message[0], message[1]);
-});
-
-ipcMain.on("mouseClick", (event, message) => {
-  if (message) {
-    osControl.mouseClick();
-  } else {
-    osControl.mouseClickRelease();
-  }
-});

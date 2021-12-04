@@ -1,5 +1,9 @@
 //Electron
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, Menu } = require("electron");
+
+//Control
+const OSControl = require("./OSControl");
+const osControl = new OSControl();
 
 //NodeJS
 const express = require("express");
@@ -8,65 +12,74 @@ const { networkInterfaces } = require("os");
 const path = require("path");
 
 class Receiver {
-  constructor(stop, play, statusDiv, port = 3000) {
+  constructor(port = 3000) {
     this.port = port;
     this.app = null;
     this.server = null;
     this.router = null;
-    //HTML elements
-    this.stop = stop;
-    this.play = play;
-    this.statusDiv = statusDiv;
+    //Tray
+    this.menu = null;
+    this.tray = null;
   }
 
-  setUpServer() {
+  setUpServer(tray, menu) {
+    if (tray !== null && menu.length > 0) {
+      this.tray = tray;
+      this.menu = menu;
+    }
+    this.app = express();
+    this.router = express.Router();
     this.router.get("/", (req, res, next) => {
       res.sendFile(path.join(__dirname, "./../view/serverView.html"));
     });
 
     this.app.use("/", this.router);
   }
-  start() {
-    this.app = express();
-    this.router = express.Router();
-    this.setUpServer();
+  start(tray, menu) {
+    
+    this.setUpServer(tray, menu);
     this.server = this.app.listen(
-      3000,
-      onConnectHandler.bind(this, this.statusDiv, this.port)
+      this.port,
+      onConnectHandler.bind(this, this.port, this.tray, this.menu)
     );
 
     const io = require("socket.io")(this.server);
-    io.on("connection", con => {
+    io.on("connection", (con) => {
       console.log("Someone is connected");
       con.on("disconnect", () => console.log("client disconnected"));
       con.on("type", typeHandler);
       con.on("move", moveHandler);
       con.on("mousePress", pressHandler);
+      con.on("scroll",scrollHandler)
     });
-
-    //Set STOP listener
-    this.stop.addEventListener("click", stopHandler.bind(this, this.server));
+    
+    this.menu[3].click = stopHandler.bind(this,this.server,this.tray,this.menu);
   }
 }
 
-let stopHandler = (server, event) => {
-  event.preventDefault();
+let stopHandler = (server,tray,menu) => {
   server.close(() => console.log("Server Closed"));
+  menu[0].label = `Stopped`;
+  tray.setContextMenu(Menu.buildFromTemplate(menu));
 };
 
-let typeHandler = data => {
-  ipcRenderer.send("type", data);
+let typeHandler = (data) => {
+  osControl.type(data);
 };
 
-let moveHandler = data => {
-  ipcRenderer.send("move", data);
+let moveHandler = (data) => {
+  osControl.move(data[0],data[1])
 };
 
-let pressHandler = data => {
-  ipcRenderer.send("mouseClick", data);
+let pressHandler = (data) => {
+  if (data) {
+    osControl.mouseClick();
+  } else {
+    osControl.mouseClickRelease();
+  }
 };
 
-let onConnectHandler = (status, port) => {
+let onConnectHandler = (port, tray, menu) => {
   let interfaces = networkInterfaces();
   let address = "";
 
@@ -86,7 +99,12 @@ let onConnectHandler = (status, port) => {
     }
   }
 
-  status.innerHTML = `Listening on <span>${address}:${port}</span>`;
+  menu[0].label = `Listening on ${address}:${port}`;
+  tray.setContextMenu(Menu.buildFromTemplate(menu));
 };
+
+let scrollHandler = (data) => {
+  osControl.scroll(data)
+}
 
 module.exports = Receiver;
