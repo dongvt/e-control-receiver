@@ -20,4 +20,20 @@
 
 </html>
 
+<!-- 
+ Programmer notes: RobotJS
+ Scrolling is not working well in robot js.
+ 
+ So, when downloading the modules it is also necessary to change the scrollMouse function on mouse.c LINE 344
+ by 
+ 
+	SendInput(2, mouseScrollInputs, sizeof(INPUT));
+ 
+ this should be done in the windows section
+
+ once done a rebuilt should be done.
+ Here is the information in the Robotjs page: http://robotjs.io/docs/electron
+
+ The last working command on my machine was: npm rebuild --runtime=electron --target=16.13.0 --disturl=https://atom.io/download/atom-shell --abi=null
+-->
 <!-- Created by npx create-electron-app [name of the project folder]-->
