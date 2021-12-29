@@ -59,9 +59,9 @@ class OSControl {
   scroll(direction) {
     let magnitud = 0;
     if(direction === "down") {
-      magnitud = -50;
+      magnitud = -120;
     } else {
-      magnitud = 50;
+      magnitud = 120;
     }
     robot.scrollMouse(0,direction);
   }
