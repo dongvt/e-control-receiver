@@ -63,7 +63,7 @@ class OSControl {
     } else {
       magnitud = 120;
     }
-    robot.scrollMouse(0,direction);
+    robot.scrollMouse(0,magnitud);
   }
 }
 
